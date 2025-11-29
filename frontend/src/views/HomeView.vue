@@ -44,6 +44,7 @@
           :product="product"
           :isBestChoice="index === 0"
           @add-to-cart="handleAddToCart"
+          @view-details="abrirModal"
         />
       </div>
     </section>
@@ -121,6 +122,13 @@
         <p>© 2025 Dutch Roots Vivero de Plantas. Todos los derechos reservados.</p>
       </div>
     </footer>
+
+    <!-- Product Detail Modal -->
+    <ProductModal 
+      :producto="productoSeleccionado"
+      @close="cerrarModal"
+      @add-to-cart="handleAddToCart"
+    />
   </div>
 </template>
 
@@ -128,9 +136,11 @@
 import { ref, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import ProductCard from '../components/ProductCard.vue'
+import ProductModal from '../components/ProductModal.vue'
 import api from '../services/api'
 
 const featuredProducts = ref([])
+const productoSeleccionado = ref(null)
 
 const cargarProductosDestacados = async () => {
   try {
@@ -150,6 +160,14 @@ const cargarProductosDestacados = async () => {
 
 const handleAddToCart = (product) => {
   console.log('Added to cart:', product)
+}
+
+const abrirModal = (producto) => {
+  productoSeleccionado.value = producto
+}
+
+const cerrarModal = () => {
+  productoSeleccionado.value = null
 }
 
 onMounted(() => {

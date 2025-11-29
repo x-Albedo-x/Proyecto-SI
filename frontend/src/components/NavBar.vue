@@ -252,8 +252,8 @@ const handleLogout = () => {
 .user-profile-trigger {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 6px;
+  gap: 8px;
+  padding: 6px 10px;
   background: white;
   border: 2px solid #e5e7eb;
   border-radius: 50px;
@@ -300,6 +300,26 @@ const handleLogout = () => {
 
 .dropdown-arrow.rotated {
   transform: rotate(180deg);
+}
+
+.user-avatar-small {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+}
+
+.user-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .dropdown-menu {

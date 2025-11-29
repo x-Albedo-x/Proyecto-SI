@@ -76,12 +76,19 @@
           </div>
           
           <div class="header-controls">
-            <select v-model="filtros.ordenar" @change="aplicarFiltros" class="sort-select">
-              <option value="">Ordenar por</option>
-              <option value="precio_asc">Precio: Menor a Mayor</option>
-              <option value="precio_desc">Precio: Mayor a Menor</option>
-              <option value="nombre">Nombre A-Z</option>
-            </select>
+            <div class="sort-container">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon">
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="18" x2="20" y2="18"></line>
+              </svg>
+              <select v-model="filtros.ordenar" @change="aplicarFiltros" class="sort-select">
+                <option value="">Ordenar por</option>
+                <option value="precio_asc">Precio: Menor a Mayor</option>
+                <option value="precio_desc">Precio: Mayor a Menor</option>
+                <option value="nombre">Nombre A-Z</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -110,7 +117,12 @@ npm run seed:products</code></pre>
         </div>
 
         <div v-else class="productos-grid">
-          <div v-for="producto in productos" :key="producto.producto_id" class="producto-card">
+          <div 
+            v-for="producto in productos" 
+            :key="producto.producto_id" 
+            class="producto-card"
+            @click="abrirModal(producto)"
+          >
             <div class="producto-image">
               <img :src="producto.imagen_url" :alt="producto.nombre" />
               <span v-if="producto.stock < 10" class="stock-badge">
@@ -125,7 +137,7 @@ npm run seed:products</code></pre>
               <div class="producto-footer">
                 <span class="producto-precio">${{ producto.precio.toFixed(2) }}</span>
                 <button 
-                  @click="agregarAlCarrito(producto)" 
+                  @click.stop="agregarAlCarrito(producto)" 
                   class="add-to-cart-btn"
                   :disabled="producto.stock === 0"
                 >
@@ -142,18 +154,29 @@ npm run seed:products</code></pre>
         </div>
       </main>
     </div>
+
+    <!-- Product Detail Modal -->
+    <ProductModal 
+      :producto="productoSeleccionado"
+      @close="cerrarModal"
+      @add-to-cart="agregarAlCarrito"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
+import ProductModal from '../components/ProductModal.vue'
 import api from '../services/api'
+import { useCartStore } from '../stores/cartStore'
 
 const productos = ref([])
 const categorias = ref([])
 const loading = ref(false)
 const mostrarInstruccionesSeed = ref(false)
+const productoSeleccionado = ref(null)
+const cartStore = useCartStore()
 
 const filtros = ref({
   busqueda: '',
@@ -219,6 +242,16 @@ const limpiarFiltros = () => {
 const agregarAlCarrito = (producto) => {
   console.log('Agregar al carrito:', producto)
   // TODO: Implementar funcionalidad de carrito
+}
+
+const abrirModal = (producto) => {
+  productoSeleccionado.value = producto
+  document.body.style.overflow = 'hidden'
+}
+
+const cerrarModal = () => {
+  productoSeleccionado.value = null
+  document.body.style.overflow = 'auto'
 }
 
 onMounted(() => {
@@ -367,8 +400,9 @@ onMounted(() => {
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -386,7 +420,7 @@ onMounted(() => {
 }
 
 .sort-select {
-  padding: 10px 16px;
+  padding: 8px 12px 8px 32px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
@@ -395,6 +429,26 @@ onMounted(() => {
   cursor: pointer;
   background: white;
   transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding-right: 12px;
+}
+
+.sort-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 180px;
+}
+
+.sort-icon {
+  position: absolute;
+  left: 8px;
+  pointer-events: none;
+  color: #6b7280;
+  z-index: 1;
 }
 
 .sort-select:focus {
@@ -453,6 +507,9 @@ onMounted(() => {
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .producto-card:hover {
@@ -493,6 +550,9 @@ onMounted(() => {
 
 .producto-info {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .producto-nombre {
@@ -511,6 +571,7 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
 }
 
 .producto-footer {
@@ -570,5 +631,13 @@ onMounted(() => {
     gap: 16px;
     align-items: flex-start;
   }
+}
+
+.producto-card {
+  cursor: pointer;
+}
+
+.producto-card:hover {
+  cursor: pointer;
 }
 </style>

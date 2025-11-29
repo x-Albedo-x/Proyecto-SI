@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card">
+  <div class="product-card" @click="abrirDetalles">
     <div class="badge" v-if="isBestChoice">✓ Best choice</div>
     <div class="product-image">
       <img :src="product.imagen_url" :alt="product.nombre" />
@@ -9,7 +9,7 @@
       <p class="product-description">{{ product.descripcion }}</p>
       <div class="product-footer">
         <span class="product-price">${{ product.precio }}</span>
-        <button class="add-btn" @click="addToCart">
+        <button class="add-btn" @click.stop="addToCart">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
@@ -33,10 +33,14 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['add-to-cart'])
+const emit = defineEmits(['add-to-cart', 'view-details'])
 
 const addToCart = () => {
   emit('add-to-cart', props.product)
+}
+
+const abrirDetalles = () => {
+  emit('view-details', props.product)
 }
 </script>
 
