@@ -11,73 +11,78 @@
 
     <div class="right-section">
       <div class="form-container">
-        <h1 class="title">Create your Free Account</h1>
+        <h1 class="title">Crea tu Cuenta Gratis</h1>
+        
+        <div v-if="error" class="alert alert-error">{{ error }}</div>
+        <div v-if="success" class="alert alert-success">{{ success }}</div>
         
         <form @submit.prevent="handleRegister" class="auth-form">
           <div class="form-group">
-            <label for="fullname">Full Name</label>
+            <label for="nombre">Nombre Completo</label>
             <input 
               type="text" 
-              id="fullname"
-              v-model="formData.fullname"
-              placeholder="Enter your Full Name here"
+              id="nombre"
+              v-model="formData.nombre"
+              placeholder="Ingresa tu nombre completo"
               required
+              :disabled="loading"
             />
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="correo">Correo Electrónico</label>
             <input 
               type="email" 
-              id="email"
-              v-model="formData.email"
-              placeholder="Enter your Email here"
+              id="correo"
+              v-model="formData.correo"
+              placeholder="Ingresa tu correo"
               required
+              :disabled="loading"
             />
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="telefono">Teléfono</label>
+            <input 
+              type="tel" 
+              id="telefono"
+              v-model="formData.telefono"
+              placeholder="Ingresa tu teléfono"
+              :disabled="loading"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input 
+              type="text" 
+              id="direccion"
+              v-model="formData.direccion"
+              placeholder="Ingresa tu dirección"
+              :disabled="loading"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
             <input 
               type="password" 
               id="password"
               v-model="formData.password"
-              placeholder="Enter your Password here"
+              placeholder="Ingresa tu contraseña"
               required
+              :disabled="loading"
             />
           </div>
 
-          <button type="submit" class="submit-btn">Create Account</button>
+          <button type="submit" class="submit-btn" :disabled="loading">
+            {{ loading ? 'Registrando...' : 'Crear Cuenta' }}
+          </button>
         </form>
 
         <p class="toggle-text">
-          Already have a account? <router-link to="/login" class="link">Log in</router-link>
+          ¿Ya tienes una cuenta? <router-link to="/login" class="link">Inicia Sesión</router-link>
         </p>
-
-        <div class="divider">
-          <span>— OR —</span>
-        </div>
-
-        <div class="social-buttons">
-          <button class="social-btn google-btn">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M19.8 10.2273C19.8 9.51819 19.7364 8.83637 19.6182 8.18182H10.2V12.05H15.6109C15.3727 13.3 14.6727 14.3591 13.6273 15.0682V17.5773H16.8273C18.7091 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4"/>
-              <path d="M10.2 20C12.9 20 15.1636 19.1045 16.8273 17.5773L13.6273 15.0682C12.7364 15.6682 11.5909 16.0227 10.2 16.0227C7.59545 16.0227 5.38182 14.2636 4.58182 11.9H1.27273V14.4909C2.92727 17.7591 6.30909 20 10.2 20Z" fill="#34A853"/>
-              <path d="M4.58182 11.9C4.38182 11.3 4.26364 10.6591 4.26364 10C4.26364 9.34091 4.38182 8.7 4.58182 8.1V5.50909H1.27273C0.581818 6.88636 0.2 8.4 0.2 10C0.2 11.6 0.581818 13.1136 1.27273 14.4909L4.58182 11.9Z" fill="#FBBC04"/>
-              <path d="M10.2 3.97727C11.7136 3.97727 13.0727 4.48182 14.1636 5.51818L17.0273 2.65455C15.1636 0.936364 12.9 0 10.2 0C6.30909 0 2.92727 2.24091 1.27273 5.50909L4.58182 8.1C5.38182 5.73636 7.59545 3.97727 10.2 3.97727Z" fill="#EA4335"/>
-            </svg>
-            Sing up with Google
-          </button>
-
-          <button class="social-btn github-btn">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M10 0C4.475 0 0 4.475 0 10C0 14.425 2.8625 18.1625 6.8375 19.4875C7.3375 19.575 7.525 19.275 7.525 19.0125C7.525 18.775 7.5125 17.9875 7.5125 17.15C5 17.6125 4.35 16.5375 4.15 15.975C4.0375 15.6875 3.55 14.8 3.125 14.5625C2.775 14.375 2.275 13.9125 3.1125 13.9C3.9 13.8875 4.4625 14.625 4.65 14.925C5.55 16.4375 6.9875 16.0125 7.5625 15.75C7.65 15.1 7.9125 14.6625 8.2 14.4125C5.975 14.1625 3.65 13.3 3.65 9.475C3.65 8.3875 4.0375 7.4875 4.675 6.7875C4.575 6.5375 4.225 5.5125 4.775 4.1375C4.775 4.1375 5.6125 3.875 7.525 5.1625C8.325 4.9375 9.175 4.825 10.025 4.825C10.875 4.825 11.725 4.9375 12.525 5.1625C14.4375 3.8625 15.275 4.1375 15.275 4.1375C15.825 5.5125 15.475 6.5375 15.375 6.7875C16.0125 7.4875 16.4 8.375 16.4 9.475C16.4 13.3125 14.0625 14.1625 11.8375 14.4125C12.2 14.725 12.5125 15.325 12.5125 16.2625C12.5125 17.6 12.5 18.675 12.5 19.0125C12.5 19.275 12.6875 19.5875 13.1875 19.4875C15.1727 18.8173 16.8977 17.5415 18.1198 15.8395C19.3419 14.1376 19.9995 12.0953 20 10C20 4.475 15.525 0 10 0Z" fill="currentColor"/>
-            </svg>
-            Sing up with GitHub
-          </button>
-        </div>
-
-        <p class="footer-text">Reserved directs to Leo Barreto</p>
       </div>
     </div>
   </div>
@@ -86,18 +91,41 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { authService } from '../services/authService'
 
 const router = useRouter()
 
 const formData = ref({
-  fullname: '',
-  email: '',
+  nombre: '',
+  correo: '',
+  telefono: '',
+  direccion: '',
   password: ''
 })
 
-const handleRegister = () => {
-  console.log('Register:', formData.value)
-  // Aquí irá la lógica de registro
+const loading = ref(false)
+const error = ref('')
+const success = ref('')
+
+const handleRegister = async () => {
+  try {
+    loading.value = true
+    error.value = ''
+    success.value = ''
+
+    await authService.registerCliente(formData.value)
+    
+    success.value = 'Registro exitoso. Redirigiendo al login...'
+    
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
+  } catch (err) {
+    error.value = err.message || 'Error al registrar. Por favor intenta de nuevo.'
+    console.error('Error en registro:', err)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -195,6 +223,25 @@ const handleRegister = () => {
   margin-bottom: 40px;
   color: #1a1a1a;
   text-align: left;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.alert-success {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #3c3;
 }
 
 .auth-form {
