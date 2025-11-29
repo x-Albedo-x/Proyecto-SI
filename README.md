@@ -112,20 +112,17 @@ proyecto-si/
 4. Se crea el registro en la tabla `cliente`
 5. Redirige al login
 
-### Login
-1. El usuario selecciona si es Cliente o Administrador
-2. Ingresa correo y contraseña
-3. Los datos se envían a:
-   - Cliente: `POST /api/auth/login/cliente`
-   - Admin: `POST /api/auth/login/usuario`
-4. El backend verifica las credenciales
-5. Si son correctas, genera un JWT token
-6. El frontend guarda el token en localStorage
-7. Redirige según el tipo:
-   - Cliente → `/` (Home)
-   - Admin → `/dashboard`
+### Login (Unificado)
+1. El usuario ingresa correo y contraseña
+2. Los datos se envían a `POST /api/auth/login`
+3. El backend detecta si el correo pertenece a `cliente` o `usuario`
+4. Si las credenciales son correctas, genera un JWT token
+5. El frontend guarda el token en `localStorage` y consulta `/api/perfil` para completar el perfil
+6. Redirecciones sugeridas:
+  - Cliente → `/` (Home)
+  - Usuario (admin/vendedor) → `/dashboard`
 
-## Endpoints API
+## Endpoints API (actual)
 
 ### Autenticación
 
@@ -133,17 +130,61 @@ proyecto-si/
   - Body: `{ nombre, correo, telefono?, direccion?, password }`
   - Respuesta: `{ message, cliente_id }`
 
-- **POST** `/api/auth/login/cliente`
+- **POST** `/api/auth/login` (unificado)
   - Body: `{ correo, password }`
-  - Respuesta: `{ message, token, user }`
+  - Respuesta: `{ message, token, user }` (user incluye `tipo: 'cliente'|'usuario'` y para `usuario` el `rol`)
 
-- **POST** `/api/auth/login/usuario`
-  - Body: `{ correo, password }`
-  - Respuesta: `{ message, token, user }`
+- (Compat) **POST** `/api/auth/login/cliente` y `/api/auth/login/usuario`
+  - Mantendidos para compatibilidad con clientes antiguos
 
 - **GET** `/api/auth/verify`
   - Headers: `Authorization: Bearer <token>`
   - Respuesta: `{ message, user }`
+
+### Perfil
+
+- **GET** `/api/perfil`
+  - Headers: `Authorization: Bearer <token>`
+  - Respuesta: Perfil del usuario/cliente autenticado
+
+- **PUT** `/api/perfil`
+  - Body: `{ nombre?, correo?, telefono?, direccion?, avatar_url? }`
+  - Actualiza datos del perfil. Para `usuario` (admin/vendedor) no aplica `telefono`/`direccion`.
+
+- **POST** `/api/perfil/cambiar-contrasena`
+  - Body: `{ contrasenaActual, contrasenaNueva, confirmar }`
+
+### Productos
+
+- **GET** `/api/productos`
+  - Query opcional: `categoria`, `precioMin`, `precioMax`, `busqueda`, `ordenar`
+  - Respuesta: `{ success, count, productos }` con `stock` desde `inventario`
+
+- **GET** `/api/productos/categorias`
+- **GET** `/api/productos/:id`
+
+- (Admin) **POST** `/api/productos`
+- (Admin) **PUT** `/api/productos/:id`
+- (Admin) **PUT** `/api/productos/:id/stock`
+- (Admin) **DELETE** `/api/productos/:id`
+
+### Pedidos
+
+- (Cliente) **POST** `/api/pedidos/crear`
+  - Body: `{ items: [{ producto_id, cantidad, precio }] }`
+
+- (Cliente) **GET** `/api/pedidos/mis-pedidos`
+
+- (Admin - testing) **GET** `/api/pedidos/admin/todos`
+- (Admin - testing) **GET** `/api/pedidos/admin/estadisticas-hora`
+- (Admin - testing) **GET** `/api/pedidos/admin/estadisticas`
+
+### Comunidad
+
+- **GET** `/api/comunidad/comentarios`
+- **GET** `/api/comunidad/comentarios/:productoId`
+- **POST** `/api/comunidad/comentarios` (autenticado)
+- **DELETE** `/api/comunidad/comentarios/:comentarioId` (autenticado y dueño)
 
 ## Usuarios de Prueba
 
@@ -178,3 +219,27 @@ Regístrate desde `/register`
 - [ ] Sistema de pedidos
 - [ ] Panel de administración completo
 - [ ] Integración de pagos
+
+## Notas de despliegue y ejecución
+
+- Asegúrate de ejecutar `backend/update-productos.sql` si vienes de una BD creada con `database.sql` antiguo, para añadir la columna `categoria` usada por el frontend/backend:
+
+```bash
+mysql -u root -p < backend/update-productos.sql
+```
+
+- En Windows PowerShell, comandos típicos:
+
+```pwsh
+cd "C:\Escuela\LenguajesModernos\Proyecto-SI\backend"
+npm install
+node server.js
+
+cd "C:\Escuela\LenguajesModernos\Proyecto-SI\frontend"
+npm install
+npm run dev
+```
+
+- Variables de entorno requeridas por el backend: `PORT`, `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`.
+
+- Seguridad: los endpoints `/api/pedidos/admin/*` están sin guard de admin por testing. En producción, proteger con middleware `verifyAdmin` y validar `rol==='administrador'`.
