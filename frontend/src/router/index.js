@@ -8,6 +8,7 @@ import ProfileView from '../views/ProfileView.vue'
 import CartView from '../views/CartView.vue'
 import OrdersView from '../views/OrdersView.vue'
 import ComunidadView from '../views/ComunidadView.vue'
+import AboutView from '../views/AboutView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,7 +72,7 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      component: () => import('../views/HomeView.vue')
+      component: AboutView
     },
     {
       path: '/comunidad',

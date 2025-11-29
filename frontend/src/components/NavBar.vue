@@ -12,8 +12,8 @@
       <ul class="nav-menu">
         <li><router-link to="/" class="nav-link">Inicio</router-link></li>
         <li><router-link to="/productos" class="nav-link">Productos</router-link></li>
-        <li><router-link to="/about" class="nav-link">Sobre Nosotros</router-link></li>
         <li><router-link to="/comunidad" class="nav-link">Comunidad</router-link></li>
+        <li><router-link to="/about" class="nav-link">Sobre Nosotros</router-link></li>
       </ul>
 
       <!-- Si no está logueado -->
