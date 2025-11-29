@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes.js';
 import productoRoutes from './routes/productoRoutes.js';
 import perfilRoutes from './routes/perfilRoutes.js';
 import pedidoRoutes from './routes/pedidoRoutes.js';
+import comunidadRoutes from './routes/comunidadRoutes.js';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/productos', productoRoutes);
 app.use('/api/perfil', perfilRoutes);
 app.use('/api/pedidos', pedidoRoutes);
+app.use('/api/comunidad', comunidadRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

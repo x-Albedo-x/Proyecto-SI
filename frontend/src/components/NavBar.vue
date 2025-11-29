@@ -6,14 +6,14 @@
           <path d="M20 5L25 15L35 17L27.5 24.5L29 35L20 29.5L11 35L12.5 24.5L5 17L15 15L20 5Z" fill="#10B981"/>
           <path d="M20 10C15 15 12 20 12 25C12 30 15 33 20 35C25 33 28 30 28 25C28 20 25 15 20 10Z" fill="#34D399"/>
         </svg>
-        <span class="logo-text">DUTCH<br>ROOTS</span>
+        <span class="logo-text">Verde & Raíces</span>
       </router-link>
 
       <ul class="nav-menu">
         <li><router-link to="/" class="nav-link">Inicio</router-link></li>
         <li><router-link to="/productos" class="nav-link">Productos</router-link></li>
         <li><router-link to="/about" class="nav-link">Sobre Nosotros</router-link></li>
-        <li><router-link to="/contact" class="nav-link">Contacto</router-link></li>
+        <li><router-link to="/comunidad" class="nav-link">Comunidad</router-link></li>
       </ul>
 
       <!-- Si no está logueado -->

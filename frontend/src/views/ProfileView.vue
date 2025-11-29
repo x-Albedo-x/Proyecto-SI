@@ -35,11 +35,11 @@
         </div>
 
         <div v-if="!editingProfile" class="info-display">
-          <div class="info-item">
+          <div class="info-item" v-if="!isAdmin">
             <label>Teléfono</label>
             <p>{{ userInfo.telefono || 'No especificado' }}</p>
           </div>
-          <div class="info-item">
+          <div class="info-item" v-if="!isAdmin">
             <label>Dirección</label>
             <p>{{ userInfo.direccion || 'No especificada' }}</p>
           </div>
@@ -59,11 +59,11 @@
               <label>Email</label>
               <input v-model="profileForm.email" type="email" />
             </div>
-            <div class="form-group">
+            <div class="form-group" v-if="!isAdmin">
               <label>Teléfono</label>
               <input v-model="profileForm.telefono" type="tel" />
             </div>
-            <div class="form-group">
+            <div class="form-group" v-if="!isAdmin">
               <label>Dirección</label>
               <input v-model="profileForm.direccion" type="text" />
             </div>
@@ -215,30 +215,53 @@ const guardarPerfil = async () => {
       nombre: profileForm.value.nombre,
       correo: profileForm.value.email,
       telefono: profileForm.value.telefono || '',
-      direccion: profileForm.value.direccion || '',
-      avatar_url: profileForm.value.avatar_url || userInfo.value.avatar_url
+      direccion: profileForm.value.direccion || ''
     }
+    
+    console.log('Enviando datos al backend:', updateData)
     
     const response = await api.put('/perfil', updateData)
     
-    userInfo.value = { ...profileForm.value, avatar_url: updateData.avatar_url }
+    console.log('Respuesta del backend:', response.data)
+    
+    // Actualizar userInfo con los datos de la respuesta
+    if (response.data.usuario) {
+      const usuarioActualizado = response.data.usuario
+      userInfo.value = {
+        nombre: usuarioActualizado.nombre,
+        email: usuarioActualizado.correo,
+        telefono: usuarioActualizado.telefono || '',
+        direccion: usuarioActualizado.direccion || '',
+        avatar_url: usuarioActualizado.avatar_url || userInfo.value.avatar_url,
+        created_at: userInfo.value.created_at
+      }
+      
+      // También actualizar profileForm para que refleje los cambios
+      profileForm.value = {
+        nombre: usuarioActualizado.nombre,
+        email: usuarioActualizado.correo,
+        telefono: usuarioActualizado.telefono || '',
+        direccion: usuarioActualizado.direccion || ''
+      }
+    }
+    
     editingProfile.value = false
     
     // Actualizar localStorage
     const user = JSON.parse(localStorage.getItem('user') || '{}')
-    user.nombre = profileForm.value.nombre
-    user.email = profileForm.value.email
-    user.correo = profileForm.value.email
-    user.telefono = profileForm.value.telefono
-    user.direccion = profileForm.value.direccion
-    user.avatar_url = updateData.avatar_url
+    user.nombre = response.data.usuario?.nombre
+    user.email = response.data.usuario?.correo
+    user.correo = response.data.usuario?.correo
+    user.telefono = response.data.usuario?.telefono
+    user.direccion = response.data.usuario?.direccion
+    user.avatar_url = response.data.usuario?.avatar_url || user.avatar_url
     localStorage.setItem('user', JSON.stringify(user))
     
-    window.dispatchEvent(new CustomEvent('userAvatarUpdated', { detail: { avatar: updateData.avatar_url } }))
+    window.dispatchEvent(new CustomEvent('userAvatarUpdated', { detail: { avatar: userInfo.value.avatar_url } }))
     
     mostrarToast('Perfil actualizado correctamente', 'success')
   } catch (error) {
-    console.error('Error al guardar perfil:', error)
+    console.error('Error al guardar perfil:', error.response?.data || error.message)
     mostrarToast(error.response?.data?.error || 'Error al guardar los cambios', 'error')
   } finally {
     loading.value = false

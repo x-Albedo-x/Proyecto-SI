@@ -7,6 +7,7 @@ import InventoryView from '../views/InventoryView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import CartView from '../views/CartView.vue'
 import OrdersView from '../views/OrdersView.vue'
+import ComunidadView from '../views/ComunidadView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -73,9 +74,10 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
-      path: '/contact',
-      name: 'contact',
-      component: () => import('../views/HomeView.vue')
+      path: '/comunidad',
+      name: 'comunidad',
+      component: ComunidadView,
+      meta: { requiresAuth: true }
     }
   ],
 })
