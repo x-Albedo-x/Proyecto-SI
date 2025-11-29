@@ -67,6 +67,7 @@
                 </span>
               </p>
               <p><strong>Fecha:</strong> {{ formatDate(pedidoSeleccionado.fecha) }}</p>
+              <p><strong>Dirección de Envío:</strong> {{ pedidoSeleccionado.direccion_envio }}</p>
             </div>
 
             <div class="items-section" v-if="pedidoSeleccionado.items">

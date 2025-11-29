@@ -18,13 +18,25 @@ export const crearPedido = async (req, res) => {
       return res.status(400).json({ error: 'El carrito está vacío' })
     }
 
+    // Obtener dirección del cliente
+    const [clienteData] = await db.query(
+      'SELECT direccion FROM cliente WHERE cliente_id = ?',
+      [userId]
+    )
+    
+    if (clienteData.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' })
+    }
+    
+    const direccionEnvio = clienteData[0].direccion || 'No especificada'
+
     // Calcular total
     const total = items.reduce((sum, item) => sum + (item.precio * item.cantidad), 0)
 
-    // Crear pedido
+    // Crear pedido con la dirección del cliente
     const [resultPedido] = await db.query(
       'INSERT INTO pedido (cliente_id, total, estado, direccion_envio) VALUES (?, ?, ?, ?)',
-      [userId, total, 'entregado', 'Dirección de envío']
+      [userId, total, 'entregado', direccionEnvio]
     )
 
     const pedidoId = resultPedido.insertId
