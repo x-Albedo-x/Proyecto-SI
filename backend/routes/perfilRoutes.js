@@ -8,6 +8,11 @@ import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Ruta de prueba sin autenticación para debug
+router.get('/test', (req, res) => {
+  res.json({ message: 'Test endpoint working', authHeader: req.headers.authorization });
+});
+
 // Todas las rutas requieren autenticación
 router.use(verifyToken);
 

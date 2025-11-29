@@ -1,39 +1,6 @@
 <template>
   <div class="dashboard">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <svg width="35" height="35" viewBox="0 0 40 40" fill="none">
-          <path d="M20 5L25 15L35 17L27.5 24.5L29 35L20 29.5L11 35L12.5 24.5L5 17L15 15L20 5Z" fill="#10B981"/>
-        </svg>
-        <h2>DUTCH ROOTS</h2>
-      </div>
-
-      <nav class="sidebar-nav">
-        <button class="nav-item active" @click="goDashboard" type="button">
-          <span class="icon">—</span>
-          <span>Dashboard</span>
-        </button>
-        <button class="nav-item" @click="goPedidos" type="button">
-          <span class="icon">—</span>
-          <span>Pedidos</span>
-        </button>
-        <button class="nav-item" @click="goInventario" type="button">
-          <span class="icon">—</span>
-          <span>Inventario</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="user-profile">
-          <img src="https://i.pravatar.cc/40?img=5" alt="Admin" />
-          <div>
-            <p class="user-name">Admin</p>
-            <p class="user-role">Administrador</p>
-          </div>
-        </div>
-        <button class="logout-btn" @click="handleLogout">Cerrar Sesión</button>
-      </div>
-    </aside>
+    <AdminSidebar />
 
     <main class="main-content">
       <div class="dashboard-header">
@@ -93,6 +60,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Chart from '../components/Chart.vue'
+import AdminSidebar from '../components/AdminSidebar.vue'
 import { pedidoService } from '../services/pedidoService'
 
 const router = useRouter()
@@ -102,6 +70,10 @@ const estadisticas = ref({
   ventasPorProducto: []
 })
 const statsHora = ref([])
+const adminUser = ref({
+  nombre: 'Admin',
+  avatar_url: ''
+})
 
 const datosGrafica = computed(() => {
   const porHora = {}
@@ -207,15 +179,14 @@ const goDashboard = () => {
   router.push('/dashboard')
 }
 
-const goPedidos = () => {
-  router.push('/orders')
-}
-
-const goInventario = () => {
-  router.push('/admin/inventario')
-}
-
 onMounted(() => {
+  // Cargar datos del admin desde localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  adminUser.value = {
+    nombre: user.nombre || 'Admin',
+    avatar_url: user.avatar_url || ''
+  }
+  
   cargarDatos()
   // Recargar cada 30 segundos
   setInterval(cargarDatos, 30000)
@@ -227,117 +198,6 @@ onMounted(() => {
   display: flex;
   min-height: 100vh;
   background: #f8f9fa;
-}
-
-.sidebar {
-  width: 250px;
-  background: white;
-  border-right: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  height: 100vh;
-  z-index: 100;
-}
-
-.sidebar-header {
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.sidebar-header h2 {
-  font-size: 14px;
-  font-weight: 800;
-  color: #1a1a1a;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 24px 16px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  color: #6b7280;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 8px;
-  transition: all 0.2s ease;
-  border: none;
-  outline: none;
-  box-shadow: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.nav-item:hover,
-.nav-item.active {
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  color: white;
-}
-
-.nav-item .icon {
-  font-size: 18px;
-}
-
-.nav-item:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.sidebar-footer {
-  padding: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.user-profile img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.user-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.user-role {
-  font-size: 12px;
-  color: #6b7280;
-  margin: 0;
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 10px;
-  background: #fee;
-  color: #dc2626;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: #fecaca;
 }
 
 .main-content {

@@ -1,12 +1,14 @@
 <template>
   <div class="inventory-page">
-    <nav class="top-nav">
-      <button class="back-btn" @click="goBack">Volver</button>
-      <h1>Inventario</h1>
-      <button class="add-btn" @click="openModal">Agregar Producto</button>
-    </nav>
+    <AdminSidebar />
+    
+    <main class="main-content">
+      <nav class="top-nav">
+        <h1>Inventario</h1>
+        <button class="add-btn" @click="openModal">Agregar Producto</button>
+      </nav>
 
-    <div class="inventory-container">
+      <div class="inventory-container">
       <div class="filters">
         <input 
           v-model="filtro" 
@@ -152,12 +154,14 @@
         </form>
       </div>
     </div>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminSidebar from '../components/AdminSidebar.vue'
 import { productService } from '../services/productService'
 
 const router = useRouter()
@@ -292,10 +296,6 @@ const removeProduct = async (producto) => {
   }
 }
 
-const goBack = () => {
-  router.push('/dashboard')
-}
-
 const cargarCategorias = async () => {
   try {
     const data = await productService.categories()
@@ -316,6 +316,14 @@ onMounted(() => {
 .inventory-page {
   min-height: 100vh;
   background: #f8f9fa;
+  display: flex;
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-nav {
@@ -323,28 +331,13 @@ onMounted(() => {
   padding: 20px 32px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.back-btn {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: #e5e7eb;
-}
-
 .top-nav h1 {
   margin: 0;
-  flex: 1;
   font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
@@ -369,6 +362,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 2rem;
+  flex: 1;
 }
 
 .filters {

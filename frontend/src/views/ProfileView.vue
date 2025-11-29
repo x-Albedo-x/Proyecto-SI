@@ -1,8 +1,10 @@
 <template>
-  <div class="profile-page">
-    <NavBar />
+  <div class="profile-page" :class="{ 'admin-layout': isAdmin }">
+    <!-- NavBar para clientes o AdminSidebar para admin -->
+    <NavBar v-if="!isAdmin" />
+    <AdminSidebar v-else />
     
-    <div class="profile-container">
+    <div class="profile-container" :class="{ 'admin-container': isAdmin }">
       <!-- Header con Foto y Datos -->
       <div class="profile-header-card">
         <div class="header-content">
@@ -112,7 +114,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import NavBar from '../components/NavBar.vue'
+import AdminSidebar from '../components/AdminSidebar.vue'
 import api from '../services/api'
+
+const isAdmin = computed(() => userType.value === 'usuario')
 
 const userInfo = ref({
   nombre: '',
@@ -337,10 +342,22 @@ onMounted(() => {
   background: #f8f9fa;
 }
 
+.profile-page.admin-layout {
+  padding-left: 250px;
+}
+
 .profile-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 120px 20px 60px;
+  width: 100%;
+}
+
+.profile-container.admin-container {
+  max-width: 100%;
+  padding: 32px;
+  padding-top: 32px;
+  margin: 0;
 }
 
 /* Header Card */

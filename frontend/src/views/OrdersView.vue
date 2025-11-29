@@ -1,11 +1,13 @@
 <template>
   <div class="orders-page">
-    <nav class="top-nav">
-      <button class="back-btn" @click="goBack">Volver</button>
-      <h1>Pedidos</h1>
-    </nav>
+    <AdminSidebar />
+    
+    <main class="main-content">
+      <nav class="top-nav">
+        <h1>Pedidos</h1>
+      </nav>
 
-    <div class="orders-container">
+      <div class="orders-container">
       <div class="filters">
         <input 
           v-model="filtro" 
@@ -91,13 +93,15 @@
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminSidebar from '../components/AdminSidebar.vue'
 import { pedidoService } from '../services/pedidoService'
 
 const router = useRouter()
@@ -152,10 +156,6 @@ const verDetalles = (pedido) => {
   pedidoSeleccionado.value = pedido
 }
 
-const goBack = () => {
-  router.push('/dashboard')
-}
-
 onMounted(() => {
   cargarPedidos()
 })
@@ -165,6 +165,14 @@ onMounted(() => {
 .orders-page {
   min-height: 100vh;
   background: #f8f9fa;
+  display: flex;
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-nav {
@@ -175,20 +183,6 @@ onMounted(() => {
   gap: 24px;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.back-btn {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: #e5e7eb;
 }
 
 .top-nav h1 {
@@ -202,6 +196,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 2rem;
+  flex: 1;
 }
 
 .filters {
