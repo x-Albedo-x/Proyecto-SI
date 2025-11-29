@@ -10,11 +10,12 @@
       <div class="product-footer">
         <span class="product-price">${{ product.precio }}</span>
         <button class="add-btn" @click.stop="addToCart">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
+          Agregar
         </button>
       </div>
     </div>
@@ -129,18 +130,20 @@ const abrirDetalles = () => {
   background: #10B981;
   color: white;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  padding: 10px 16px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .add-btn:hover {
   background: #059669;
-  transform: scale(1.1);
+  transform: translateY(-2px);
 }
 </style>

@@ -107,5 +107,28 @@ INSERT INTO inventario (producto_id, cantidad) VALUES
 (3, 25),
 (4, 40);
 
+-- Tabla de pedidos
+CREATE TABLE IF NOT EXISTS pedido (
+  pedido_id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  total DECIMAL(10, 2) NOT NULL,
+  estado ENUM('pendiente', 'completado', 'cancelado') DEFAULT 'pendiente',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (cliente_id) REFERENCES cliente(cliente_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla de detalles de pedido
+CREATE TABLE IF NOT EXISTS detalle_pedido (
+  detalle_id INT AUTO_INCREMENT PRIMARY KEY,
+  pedido_id INT NOT NULL,
+  producto_id INT NOT NULL,
+  cantidad INT NOT NULL,
+  precio_unitario DECIMAL(10, 2) NOT NULL,
+  subtotal DECIMAL(10, 2) NOT NULL,
+  FOREIGN KEY (pedido_id) REFERENCES pedido(pedido_id) ON DELETE CASCADE,
+  FOREIGN KEY (producto_id) REFERENCES producto(producto_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 USE dutch_roots;
 

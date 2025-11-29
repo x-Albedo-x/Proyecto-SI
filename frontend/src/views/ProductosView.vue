@@ -240,8 +240,10 @@ const limpiarFiltros = () => {
 }
 
 const agregarAlCarrito = (producto) => {
-  console.log('Agregar al carrito:', producto)
-  // TODO: Implementar funcionalidad de carrito
+  cartStore.agregarAlCarrito(producto, 1)
+  cerrarModal()
+  // Mostrar notificación de éxito
+  alert(`${producto.nombre} ha sido agregado al carrito`)
 }
 
 const abrirModal = (producto) => {

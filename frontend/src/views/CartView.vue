@@ -3,11 +3,11 @@
     <NavBar />
     
     <div class="cart-container">
-      <h1>🛒 Mi Carrito</h1>
+      <h1>Mi Carrito</h1>
       
       <!-- Carrito vacío -->
       <div v-if="cart.items.length === 0" class="empty-cart">
-        <div class="empty-icon">🛒</div>
+        <div class="empty-icon">🛍️</div>
         <h2>Tu carrito está vacío</h2>
         <p>Agrega productos para comenzar tu compra</p>
         <router-link to="/productos" class="btn-continue-shopping">
@@ -77,8 +77,8 @@
               <span>${{ cart.cartTotal.toFixed(2) }}</span>
             </div>
             
-            <button class="btn-checkout">
-              Proceder al Pago
+            <button class="btn-checkout" @click="procesarCompra" :disabled="procesando">
+              {{ procesando ? 'Procesando...' : 'Proceder al Pago' }}
             </button>
             
             <router-link to="/productos" class="btn-continue-shopping-link">
@@ -92,14 +92,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
+import { pedidoService } from '../services/pedidoService'
 import NavBar from '../components/NavBar.vue'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const cart = computed(() => cartStore)
+const procesando = ref(false)
 
 const incrementar = (productoId) => {
   const item = cart.value.items.find(i => i.producto_id === productoId)
@@ -125,6 +127,25 @@ const actualizarCantidad = (productoId, cantidad) => {
 
 const eliminarDelCarrito = (productoId) => {
   cartStore.removeFromCart(productoId)
+}
+
+const procesarCompra = async () => {
+  try {
+    procesando.value = true
+    
+    const resultado = await pedidoService.crearPedido(cart.value.items)
+    
+    if (resultado.success) {
+      alert(`¡Compra realizada! Número de pedido: ${resultado.pedidoId}`)
+      cartStore.vaciarCarrito()
+      router.push('/')
+    }
+  } catch (error) {
+    console.error('Error al procesar compra:', error)
+    alert('Error al procesar la compra. Intenta de nuevo.')
+  } finally {
+    procesando.value = false
+  }
 }
 </script>
 
@@ -377,9 +398,14 @@ h1 {
   margin-bottom: 12px;
 }
 
-.btn-checkout:hover {
+.btn-checkout:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-checkout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-continue-shopping,

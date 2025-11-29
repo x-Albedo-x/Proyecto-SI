@@ -1,358 +1,408 @@
 <template>
   <div class="inventory-page">
-    <NavBar v-if="isCliente" />
+    <nav class="top-nav">
+      <button class="back-btn" @click="goBack">Volver</button>
+      <h1>Inventario</h1>
+      <button class="add-btn" @click="openModal">Agregar Producto</button>
+    </nav>
+
     <div class="inventory-container">
-      <!-- Sidebar / Header Back -->
-      <div class="sidebar">
-        <button class="back-btn" @click="goBack">
-          <v-icon icon="mdi-arrow-left"/> Volver al Dashboard
-        </button>
-        <div class="sidebar-content">
-          <h2>Administración</h2>
-          <p>de Inventario</p>
+      <div class="filters">
+        <input 
+          v-model="filtro" 
+          type="text" 
+          placeholder="Buscar por nombre..."
+          class="filter-input"
+        />
+        <button @click="recargarProductos" class="refresh-btn">Recargar</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-content">
+            <p class="stat-label">Total de Productos</p>
+            <p class="stat-value">{{ productos.length }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-content">
+            <p class="stat-label">Stock Total</p>
+            <p class="stat-value">{{ totalStock }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-content">
+            <p class="stat-label">Valor Inventario</p>
+            <p class="stat-value">${{ parseFloat(totalValue).toFixed(2) }}</p>
+          </div>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <div class="page-header">
-          <div>
-            <h1>Inventario</h1>
-            <p class="subtitle">Gestiona todos los productos disponibles en tu tienda</p>
-          </div>
-          <button class="add-btn" @click="openModal">
-            <v-icon icon="mdi-plus"/> Agregar Producto
-          </button>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <v-icon icon="mdi-package" class="stat-icon"/>
-            <div>
-              <p class="stat-label">Total de Productos</p>
-              <p class="stat-value">{{ productos.length }}</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <v-icon icon="mdi-warehouse" class="stat-icon"/>
-            <div>
-              <p class="stat-label">Stock Total</p>
-              <p class="stat-value">{{ totalStock }}</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <v-icon icon="mdi-currency-usd" class="stat-icon"/>
-            <div>
-              <p class="stat-label">Valor del Inventario</p>
-              <p class="stat-value">${{ totalValue.toFixed(2) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table -->
-        <div class="table-wrap">
-          <table class="inventory-table">
-            <thead>
-              <tr>
-                <th>Imagen</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Valor</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="p in productos" :key="p.producto_id">
-                <td><img :src="p.imagen_url" alt="img" class="thumb" /></td>
-                <td><strong>{{ p.nombre }}</strong></td>
-                <td>{{ p.categoria || '—' }}</td>
-                <td>${{ p.precio.toFixed(2) }}</td>
-                <td><span class="badge">{{ p.stock }}</span></td>
-                <td>${{ (p.precio * p.stock).toFixed(2) }}</td>
-                <td class="actions-cell">
-                  <button class="action-btn edit" @click="openEdit(p)">Editar</button>
-                  <button class="action-btn stock" @click="openStock(p)">Reponer</button>
-                  <button class="action-btn delete" @click="removeProduct(p)">Eliminar</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-responsive">
+        <table v-if="productosFiltrados.length > 0" class="inventory-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Valor Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="producto in productosFiltrados" :key="producto.producto_id">
+              <td>{{ producto.nombre }}</td>
+              <td>${{ parseFloat(producto.precio).toFixed(2) }}</td>
+              <td>
+                <span class="stock-badge" :class="getStockClass(producto.stock)">
+                  {{ producto.stock }}
+                </span>
+              </td>
+              <td>${{ (parseFloat(producto.precio) * (producto.stock || 0)).toFixed(2) }}</td>
+              <td class="actions-cell">
+                <button class="action-btn edit" @click="openEdit(producto)">Editar</button>
+                <button class="action-btn stock" @click="openStock(producto)">Reponer</button>
+                <button class="action-btn delete" @click="removeProduct(producto)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else class="no-data">No hay productos registrados</p>
       </div>
+    </div>
 
-      <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
-        <div class="modal">
-          <h2 v-if="mode==='create'">Nuevo Producto</h2>
-          <h2 v-else-if="mode==='edit'">Editar Producto</h2>
-          <h2 v-else>Reponer Stock</h2>
-          <form v-if="mode!=='stock'" @submit.prevent="handleSave">
-            <div class="grid">
-              <label>
-                Nombre
-                <input v-model="form.nombre" type="text" required />
-              </label>
-              <label>
-                Precio
-                <input v-model.number="form.precio" type="number" step="0.01" required />
-              </label>
-              <label class="full">
-                Descripción
-                <textarea v-model="form.descripcion" rows="3"></textarea>
-              </label>
-              <label>
-                Categoría
-                <input v-model="form.categoria" type="text" />
-              </label>
-              <label>
-                Stock inicial
-                <input v-model.number="form.stock" type="number" min="0" />
-              </label>
-              <label class="full">
-                URL de imagen
-                <input v-model="form.imagen_url" type="url" />
-              </label>
-            </div>
-            <div class="actions">
-              <button type="button" class="secondary" @click="closeModal">Cancelar</button>
-              <button type="submit" class="primary">Guardar</button>
-            </div>
-          </form>
-          <form v-else @submit.prevent="handleStock">
-            <div class="grid">
-              <label class="full">
-                Cantidad nueva total
-                <input v-model.number="stockCantidad" type="number" min="0" required />
-              </label>
-            </div>
-            <div class="actions">
-              <button type="button" class="secondary" @click="closeModal">Cancelar</button>
-              <button type="submit" class="primary">Actualizar Stock</button>
-            </div>
-          </form>
+    <!-- Modal Agregar/Editar -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>{{ modo === 'create' ? 'Agregar Producto' : 'Editar Producto' }}</h2>
+          <button class="close-btn" @click="closeModal">×</button>
         </div>
+        
+        <form @submit.prevent="handleSave" class="modal-body">
+          <div class="form-group">
+            <label>Nombre</label>
+            <input v-model="form.nombre" type="text" required />
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea v-model="form.descripcion" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio</label>
+              <input v-model.number="form.precio" type="number" step="0.01" required />
+            </div>
+
+            <div class="form-group">
+              <label>Categoría</label>
+              <select v-model="form.categoria">
+                <option value="">Selecciona una categoría</option>
+                <option v-for="cat in categorias" :key="cat" :value="cat">
+                  {{ cat }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Imagen URL</label>
+              <input v-model="form.imagen_url" type="url" />
+            </div>
+
+            <div class="form-group" v-if="modo === 'create'">
+              <label>Stock Inicial</label>
+              <input v-model.number="form.stock" type="number" min="0" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="closeModal" class="btn-cancel">Cancelar</button>
+            <button type="submit" class="btn-save">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Reponer Stock -->
+    <div v-if="showStockModal" class="modal-overlay" @click="closeStockModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>Reponer Stock - {{ productoSeleccionado?.nombre }}</h2>
+          <button class="close-btn" @click="closeStockModal">×</button>
+        </div>
+        
+        <form @submit.prevent="handleStock" class="modal-body">
+          <div class="form-group">
+            <label>Stock Actual: {{ productoSeleccionado?.stock || 0 }}</label>
+          </div>
+
+          <div class="form-group">
+            <label>Cantidad a Agregar</label>
+            <input v-model.number="cantidadStock" type="number" required min="1" />
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="closeStockModal" class="btn-cancel">Cancelar</button>
+            <button type="submit" class="btn-save">Agregar Stock</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import NavBar from '../components/NavBar.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { productService } from '../services/productService'
 
-const productos = ref([])
-const showModal = ref(false)
-const mode = ref('create')
-const currentId = ref(null)
-const form = ref({ nombre: '', descripcion: '', categoria: '', precio: null, stock: 0, imagen_url: '' })
-const stockCantidad = ref(0)
-
-const route = useRoute()
 const router = useRouter()
+const productos = ref([])
+const filtro = ref('')
+const showModal = ref(false)
+const showStockModal = ref(false)
+const modo = ref('create')
+const productoSeleccionado = ref(null)
+const cantidadStock = ref(1)
+const categorias = ref([])
 
-// Detectar si es cliente o admin
-const isCliente = computed(() => {
-  const rawUser = localStorage.getItem('user')
-  const user = rawUser ? JSON.parse(rawUser) : null
-  return user?.tipo === 'cliente'
+const form = ref({
+  nombre: '',
+  descripcion: '',
+  precio: 0,
+  imagen_url: ''
 })
 
-// Cálculos de estadísticas
+const productosFiltrados = computed(() => {
+  if (!filtro.value) return productos.value
+  
+  const termino = filtro.value.toLowerCase()
+  return productos.value.filter(p => {
+    const nombre = (p.nombre || '').toLowerCase()
+    const desc = (p.descripcion || '').toLowerCase()
+    return nombre.includes(termino) || desc.includes(termino)
+  })
+})
+
 const totalStock = computed(() => {
   return productos.value.reduce((sum, p) => sum + (p.stock || 0), 0)
 })
 
 const totalValue = computed(() => {
-  return productos.value.reduce((sum, p) => sum + (p.precio * p.stock || 0), 0)
+  return productos.value.reduce((sum, p) => sum + (parseFloat(p.precio) * (p.stock || 0)), 0)
 })
 
-const goBack = () => {
-  router.push('/dashboard')
+const getStockClass = (stock) => {
+  if (stock <= 5) return 'low'
+  if (stock <= 15) return 'medium'
+  return 'high'
 }
 
-const load = async () => {
-  const data = await productService.list()
-  // Convertir precios a números
-  productos.value = data.map(p => ({
-    ...p,
-    precio: parseFloat(p.precio),
-    stock: parseInt(p.stock) || 0
-  }))
+const cargarProductos = async () => {
+  try {
+    const data = await productService.list()
+    console.log('Productos cargados:', data)
+    productos.value = data || []
+  } catch (error) {
+    console.error('Error al cargar productos:', error)
+  }
 }
 
-const openModal = () => { mode.value = 'create'; showModal.value = true }
-const closeModal = () => { showModal.value = false }
+const recargarProductos = () => {
+  cargarProductos()
+}
+
+const openModal = () => {
+  modo.value = 'create'
+  form.value = { nombre: '', descripcion: '', precio: 0, imagen_url: '', categoria: '', stock: 0 }
+  showModal.value = true
+}
+
+const openEdit = (producto) => {
+  modo.value = 'edit'
+  productoSeleccionado.value = producto
+  form.value = { ...producto }
+  showModal.value = true
+}
+
+const openStock = (producto) => {
+  productoSeleccionado.value = producto
+  cantidadStock.value = 1
+  showStockModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  form.value = { nombre: '', descripcion: '', precio: 0, imagen_url: '' }
+  productoSeleccionado.value = null
+}
+
+const closeStockModal = () => {
+  showStockModal.value = false
+  cantidadStock.value = 1
+}
 
 const handleSave = async () => {
   try {
-    if (mode.value === 'create') {
+    if (modo.value === 'create') {
       await productService.create(form.value)
-    } else if (mode.value === 'edit' && currentId.value) {
-      const { nombre, descripcion, categoria, precio, imagen_url } = form.value
-      await productService.update(currentId.value, { nombre, descripcion, categoria, precio, imagen_url })
+    } else {
+      await productService.update(productoSeleccionado.value.producto_id, form.value)
     }
+    
+    cargarProductos()
     closeModal()
-    form.value = { nombre: '', descripcion: '', categoria: '', precio: null, stock: 0, imagen_url: '' }
-    await load()
-  } catch (e) {
-    alert(e?.message || 'Error al guardar')
+    alert('Producto guardado correctamente')
+  } catch (error) {
+    console.error('Error al guardar:', error)
+    alert('Error al guardar el producto')
   }
 }
 
 const handleStock = async () => {
   try {
-    if (!currentId.value) return
-    await productService.updateStock(currentId.value, stockCantidad.value)
-    closeModal()
-    stockCantidad.value = 0
-    await load()
-  } catch (e) {
-    alert(e?.message || 'Error al actualizar stock')
+    const nuevoStock = (productoSeleccionado.value.stock || 0) + cantidadStock.value
+    
+    await productService.updateStock(productoSeleccionado.value.producto_id, nuevoStock)
+    
+    cargarProductos()
+    closeStockModal()
+    alert('Stock actualizado correctamente')
+  } catch (error) {
+    console.error('Error al actualizar stock:', error)
+    alert('Error al actualizar stock')
   }
 }
 
-const openEdit = (p) => {
-  mode.value = 'edit'
-  currentId.value = p.producto_id
-  form.value = { nombre: p.nombre, descripcion: p.descripcion, categoria: p.categoria, precio: p.precio, stock: p.stock, imagen_url: p.imagen_url }
-  showModal.value = true
-}
-
-const openStock = (p) => {
-  mode.value = 'stock'
-  currentId.value = p.producto_id
-  stockCantidad.value = p.stock
-  showModal.value = true
-}
-
-const removeProduct = async (p) => {
-  if (!confirm(`Eliminar ${p.nombre}?`)) return
-  await productService.remove(p.producto_id)
-  await load()
-}
-
-onMounted(async () => {
-  await load()
-  if (route.query.open === 'add') {
-    showModal.value = true
+const removeProduct = async (producto) => {
+  if (!confirm(`¿Eliminar "${producto.nombre}"?`)) return
+  
+  try {
+    await productService.remove(producto.producto_id)
+    
+    cargarProductos()
+    alert('Producto eliminado')
+  } catch (error) {
+    console.error('Error al eliminar:', error)
+    alert('Error al eliminar')
   }
+}
+
+const goBack = () => {
+  router.push('/dashboard')
+}
+
+const cargarCategorias = async () => {
+  try {
+    const data = await productService.categories()
+    console.log('Categorías cargadas:', data)
+    categorias.value = data || []
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+  }
+}
+
+onMounted(() => {
+  cargarProductos()
+  cargarCategorias()
 })
 </script>
 
 <style scoped>
 .inventory-page {
-  background: linear-gradient(135deg, #f8f9fa 0%, #f0f4f8 100%);
   min-height: 100vh;
+  background: #f8f9fa;
 }
 
-.inventory-container {
+.top-nav {
+  background: white;
+  padding: 20px 32px;
   display: flex;
-  min-height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-  width: 280px;
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  padding: 40px 24px;
-  box-shadow: 2px 0 12px rgba(16, 185, 129, 0.1);
-  position: fixed;
-  height: 100vh;
-  left: 0;
-  top: 0;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .back-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255, 0.2);
-  color: white;
-  border: none;
-  padding: 10px 14px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
   border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  justify-content: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .back-btn:hover {
-  background: rgba(255,255,255, 0.3);
+  background: #e5e7eb;
 }
 
-.sidebar-content {
-  margin-top: 40px;
-  color: white;
-}
-
-.sidebar-content h2 {
+.top-nav h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.sidebar-content p {
-  margin: 4px 0 0 0;
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-/* Main Content */
-.main-content {
-  margin-left: 280px;
   flex: 1;
-  padding: 40px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-}
-
-.page-header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0;
-}
-
-.subtitle {
-  color: #6b7280;
-  margin-top: 8px;
-  font-size: 14px;
 }
 
 .add-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  background: #10B981;
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 20px;
   border-radius: 8px;
-  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-  transform: translateY(-2px);
+  background: #059669;
 }
 
-/* Stats Grid */
+.inventory-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 2rem;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.refresh-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: #2563eb;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 32px;
 }
@@ -360,43 +410,35 @@ onMounted(async () => {
 .stat-card {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.stat-content {
   display: flex;
-  gap: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  transform: translateY(-2px);
-}
-
-.stat-icon {
-  color: #10B981;
-  font-size: 28px;
+  flex-direction: column;
 }
 
 .stat-label {
-  margin: 0;
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 500;
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 600;
+  margin: 0 0 8px 0;
 }
 
 .stat-value {
-  margin: 8px 0 0 0;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #10B981;
+  margin: 0;
 }
 
-/* Table */
-.table-wrap {
+.table-responsive {
+  overflow-x: auto;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .inventory-table {
@@ -405,48 +447,45 @@ onMounted(async () => {
 }
 
 .inventory-table th {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  padding: 16px;
+  background: #f9fafb;
+  padding: 12px 16px;
   text-align: left;
-  font-size: 12px;
-  font-weight: 700;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .inventory-table td {
-  padding: 16px;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: middle;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
 }
 
 .inventory-table tbody tr:hover {
   background: #f9fafb;
 }
 
-.thumb {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #e5e7eb;
-}
-
-.badge {
+.stock-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  color: #1e40af;
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
 }
 
-.actions-cell {
-  display: flex;
-  gap: 8px;
+.stock-badge.low {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.stock-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stock-badge.high {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .actions-cell {
@@ -455,150 +494,213 @@ onMounted(async () => {
 }
 
 .action-btn {
-  padding: 8px 14px;
   border: none;
+  padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  color: white;
+  transition: all 0.2s ease;
 }
 
 .action-btn.edit {
   background: #3b82f6;
+  color: white;
 }
 
 .action-btn.edit:hover {
   background: #2563eb;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transform: translateY(-1px);
 }
 
 .action-btn.stock {
-  background: #10B981;
+  background: #f59e0b;
+  color: white;
 }
 
 .action-btn.stock:hover {
-  background: #059669;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
-  transform: translateY(-1px);
+  background: #d97706;
 }
 
 .action-btn.delete {
   background: #ef4444;
+  color: white;
 }
 
 .action-btn.delete:hover {
   background: #dc2626;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
 }
 
-/* Modal */
-.modal-backdrop {
+.no-data {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px 20px;
+  margin: 0;
+}
+
+.modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  z-index: 1000;
 }
 
-.modal {
-  width: 600px;
-  max-width: 90vw;
+.modal-content {
   background: white;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
 }
 
-.modal h2 {
-  margin: 0 0 24px 0;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
   font-size: 20px;
+  font-weight: 700;
   color: #1a1a1a;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #1a1a1a;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
   margin-bottom: 16px;
-}
-
-.grid .full {
-  grid-column: 1 / -1;
-}
-
-.grid label {
   display: flex;
   flex-direction: column;
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 4px;
 }
 
-input, textarea {
-  width: 100%;
+.form-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
   padding: 10px 12px;
-  border: 2px solid #e5e7eb;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.2s ease;
   font-family: inherit;
 }
 
-input:focus, textarea:focus {
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
   border-color: #10B981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
-.secondary {
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-cancel {
+  flex: 1;
   padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 600;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
-.secondary:hover {
+.btn-cancel:hover {
   background: #e5e7eb;
 }
 
-.primary {
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+.btn-save {
+  flex: 1;
+  padding: 10px 16px;
+  background: #10B981;
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
-.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+.btn-save:hover {
+  background: #059669;
 }
 
-@media (max-width: 1024px) {
-  .sidebar { width: 0; padding: 0; }
-  .main-content { margin-left: 0; padding: 24px; }
-  .page-header { flex-direction: column; gap: 16px; }
-  .stats-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .top-nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .top-nav h1 {
+    flex-basis: 100%;
+    font-size: 22px;
+  }
+
+  .inventory-container {
+    padding: 20px 1rem;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
 }
 </style>

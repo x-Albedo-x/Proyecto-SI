@@ -138,9 +138,11 @@ import NavBar from '../components/NavBar.vue'
 import ProductCard from '../components/ProductCard.vue'
 import ProductModal from '../components/ProductModal.vue'
 import api from '../services/api'
+import { useCartStore } from '../stores/cartStore'
 
 const featuredProducts = ref([])
 const productoSeleccionado = ref(null)
+const cartStore = useCartStore()
 
 const cargarProductosDestacados = async () => {
   try {
@@ -159,7 +161,9 @@ const cargarProductosDestacados = async () => {
 }
 
 const handleAddToCart = (product) => {
-  console.log('Added to cart:', product)
+  cartStore.agregarAlCarrito(product, 1)
+  cerrarModal()
+  alert(`${product.nombre} ha sido agregado al carrito`)
 }
 
 const abrirModal = (producto) => {
@@ -182,7 +186,7 @@ onMounted(() => {
 }
 
 .hero {
-  padding-top: 100px;
+  padding-top: 120px;
   padding-bottom: 60px;
   min-height: auto;
 }
