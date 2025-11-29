@@ -73,7 +73,7 @@ export const loginCliente = async (req, res) => {
     // Generar token
     const token = jwt.sign(
       { 
-        id: cliente.cliente_id, 
+        userId: cliente.cliente_id, 
         correo: cliente.correo,
         tipo: 'cliente'
       },
@@ -130,7 +130,7 @@ export const loginUsuario = async (req, res) => {
     // Generar token
     const token = jwt.sign(
       { 
-        id: usuario.usuario_id, 
+        userId: usuario.usuario_id, 
         correo: usuario.correo,
         rol: usuario.rol,
         tipo: 'usuario'
@@ -185,7 +185,7 @@ export const login = async (req, res) => {
       // Generar token
       const token = jwt.sign(
         { 
-          id: cliente.id, 
+          userId: cliente.id, 
           correo: cliente.correo,
           tipo: 'cliente'
         },
@@ -228,7 +228,7 @@ export const login = async (req, res) => {
     // Generar token
     const token = jwt.sign(
       { 
-        id: usuario.id, 
+        userId: usuario.id, 
         correo: usuario.correo,
         rol: usuario.rol,
         tipo: 'usuario'

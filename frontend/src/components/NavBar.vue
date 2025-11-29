@@ -23,7 +23,8 @@
       <div v-else class="user-menu-container">
         <div class="user-profile-trigger" @click="toggleMenu">
           <div class="user-avatar-small">
-            {{ userInitial }}
+            <img v-if="user?.avatar_url" :src="user.avatar_url" :alt="user.nombre" />
+            <span v-else>{{ userInitial }}</span>
           </div>
           <span class="user-name">{{ userName }}</span>
           <svg 
@@ -41,7 +42,8 @@
         <div v-if="showMenu" class="dropdown-menu">
           <div class="menu-header">
             <div class="user-avatar-large">
-              {{ userInitial }}
+              <img v-if="user?.avatar_url" :src="user.avatar_url" :alt="user.nombre" />
+              <span v-else>{{ userInitial }}</span>
             </div>
             <div class="user-info">
               <p class="user-full-name">{{ user.nombre }}</p>
@@ -120,6 +122,20 @@ onMounted(() => {
   if (isLoggedIn.value) {
     user.value = authService.getCurrentUser()
   }
+  
+  // Escuchar cambios de avatar por evento
+  window.addEventListener('userAvatarUpdated', (e) => {
+    if (user.value) {
+      user.value.avatar_url = e.detail.avatar
+    }
+  })
+  
+  // Escuchar cambios en localStorage (para sincronizar entre tabs)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'user' && e.newValue) {
+      user.value = JSON.parse(e.newValue)
+    }
+  })
 })
 
 const toggleMenu = () => {
@@ -132,7 +148,7 @@ const goToLogin = () => {
 
 const goToProfile = () => {
   showMenu.value = false
-  router.push('/profile')
+  router.push('/perfil')
 }
 
 const goToCart = () => {
@@ -261,6 +277,13 @@ const handleLogout = () => {
   justify-content: center;
   font-weight: 600;
   font-size: 15px;
+  overflow: hidden;
+}
+
+.user-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-name {
@@ -323,6 +346,13 @@ const handleLogout = () => {
   font-weight: 600;
   font-size: 20px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-info {
