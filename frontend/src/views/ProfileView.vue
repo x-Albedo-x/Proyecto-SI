@@ -174,7 +174,7 @@ const cargarPerfil = async () => {
   try {
     loading.value = true
     // Simular delay para ver skeleton
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 500))
     const response = await api.get('/perfil')
     
     const user = response.data

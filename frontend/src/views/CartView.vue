@@ -155,7 +155,7 @@ const procesarCompra = async () => {
 
 // Simular delay al cargar carrito
 onMounted(() => {
-  setTimeout(() => (loading.value = false), 800)
+  setTimeout(() => (loading.value = false), 500)
 })
 </script>
 

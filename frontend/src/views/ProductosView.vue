@@ -231,7 +231,7 @@ const cargarProductos = async () => {
   try {
     loading.value = true
     // Simular delay para ver skeleton
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 500))
     
     const params = {}
     if (filtros.value.busqueda) params.busqueda = filtros.value.busqueda

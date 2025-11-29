@@ -131,7 +131,7 @@ import SkeletonLoader from '../components/SkeletonLoader.vue'
 
 const loading = ref(true)
 onMounted(() => {
-  setTimeout(() => (loading.value = false), 1200)
+  setTimeout(() => (loading.value = false), 500)
 })
 </script>
 

@@ -188,7 +188,7 @@ const cargarComentarios = async () => {
   try {
     loadingComentarios.value = true
     // Simular delay para ver skeleton
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 500))
     const response = await api.get('/comunidad/comentarios')
     comentarios.value = response.data.comentarios || []
   } catch (error) {

@@ -130,7 +130,7 @@ const topClientes = ref([])
 const cargarProductosDestacados = async () => {
   try {
     // Simular delay para ver skeleton
-    await new Promise(resolve => setTimeout(resolve, 800))
+    await new Promise(resolve => setTimeout(resolve, 500))
     const response = await api.get('/productos')
     // Tomar los primeros 4 productos
     const productos = (response.data.productos || []).slice(0, 4)
