@@ -53,6 +53,9 @@ const abrirDetalles = () => {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .product-card:hover {
@@ -94,6 +97,9 @@ const abrirDetalles = () => {
 
 .product-info {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto; /* take remaining height */
 }
 
 .product-name {
@@ -118,6 +124,7 @@ const abrirDetalles = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: auto; /* push footer to bottom for alignment */
 }
 
 .product-price {

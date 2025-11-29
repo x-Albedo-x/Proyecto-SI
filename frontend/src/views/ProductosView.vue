@@ -93,9 +93,8 @@
         </div>
 
         <!-- Grid de productos -->
-        <div v-if="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando productos...</p>
+        <div v-if="loading" class="productos-grid">
+          <SkeletonLoader v-for="n in 8" :key="n" type="card" :image="true" :lines="3" :button="true" />
         </div>
 
         <div v-else-if="productos.length === 0" class="empty-state">
@@ -209,12 +208,13 @@ npm run seed:products</code></pre>
 import { ref, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import ProductModal from '../components/ProductModal.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 import api from '../services/api'
 import { useCartStore } from '../stores/cartStore'
 
 const productos = ref([])
 const categorias = ref([])
-const loading = ref(false)
+const loading = ref(true)
 const mostrarInstruccionesSeed = ref(false)
 const productoSeleccionado = ref(null)
 const cartStore = useCartStore()
@@ -230,6 +230,8 @@ const filtros = ref({
 const cargarProductos = async () => {
   try {
     loading.value = true
+    // Simular delay para ver skeleton
+    await new Promise(resolve => setTimeout(resolve, 800))
     
     const params = {}
     if (filtros.value.busqueda) params.busqueda = filtros.value.busqueda

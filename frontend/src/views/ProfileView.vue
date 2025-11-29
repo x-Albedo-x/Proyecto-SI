@@ -6,6 +6,11 @@
     
     <div class="profile-container" :class="{ 'admin-container': isAdmin }">
       <!-- Header con Foto y Datos -->
+      <div v-if="loading" class="profile-skeleton">
+        <SkeletonLoader type="card" :avatar="true" :lines="3" />
+        <SkeletonLoader type="list" :lines="4" />
+      </div>
+      <template v-else>
       <div class="profile-header-card">
         <div class="header-content">
           <div class="avatar-section">
@@ -107,6 +112,7 @@
       <div v-if="toast.visible" :class="['toast', toast.type]">
         {{ toast.message }}
       </div>
+      </template>
     </div>
   </div>
 </template>
@@ -115,6 +121,7 @@
 import { ref, onMounted, computed } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import AdminSidebar from '../components/AdminSidebar.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 import api from '../services/api'
 
 const isAdmin = computed(() => userType.value === 'usuario')
@@ -166,6 +173,8 @@ const mostrarToast = (mensaje, tipo = 'success') => {
 const cargarPerfil = async () => {
   try {
     loading.value = true
+    // Simular delay para ver skeleton
+    await new Promise(resolve => setTimeout(resolve, 800))
     const response = await api.get('/perfil')
     
     const user = response.data
@@ -636,6 +645,13 @@ onMounted(() => {
 .toast.error {
   background: #ef4444;
   color: white;
+}
+
+.profile-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 @keyframes slideIn {

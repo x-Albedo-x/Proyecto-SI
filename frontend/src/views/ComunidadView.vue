@@ -76,6 +76,9 @@
 
         <!-- Comentarios publicados -->
         <div class="comentarios-section">
+          <div v-if="loadingComentarios" class="comentarios-loading">
+            <SkeletonLoader v-for="n in 4" :key="n" type="list" :avatar="true" :lines="2" :image="true" />
+          </div>
           <h2 v-if="comentarios.length === 0" class="no-comments">No hay comentarios aún. ¡Sé el primero en compartir!</h2>
           
           <div v-for="comentario in comentariosOrdenados" :key="comentario.id" class="comentario-card">
@@ -122,12 +125,14 @@
 import { ref, computed, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 import api from '../services/api'
 import { productService } from '../services/productService'
 
 const comentarios = ref([])
 const productos = ref([])
 const user = ref(null)
+const loadingComentarios = ref(true)
 const nuevoComentario = ref({
   texto: '',
   producto_id: '',
@@ -181,10 +186,16 @@ const cargarProductos = async () => {
 
 const cargarComentarios = async () => {
   try {
+    loadingComentarios.value = true
+    // Simular delay para ver skeleton
+    await new Promise(resolve => setTimeout(resolve, 800))
     const response = await api.get('/comunidad/comentarios')
     comentarios.value = response.data.comentarios || []
   } catch (error) {
     console.error('Error al cargar comentarios:', error)
+  }
+  finally {
+    loadingComentarios.value = false
   }
 }
 

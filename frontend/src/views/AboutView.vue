@@ -3,6 +3,12 @@
     <NavBar />
     
     <div class="about-container">
+      <div v-if="loading" class="about-skeletons">
+        <SkeletonLoader type="list" :lines="2" />
+        <SkeletonLoader type="list" :lines="3" />
+        <SkeletonLoader type="card" :image="true" :lines="2" />
+      </div>
+      <div v-else>
       <!-- Hero Section -->
       <section class="hero-section">
         <div class="hero-content">
@@ -110,6 +116,7 @@
         <p>Descubre nuestra amplia selección de plantas y accesorios</p>
         <router-link to="/productos" class="cta-button">Ver Productos</router-link>
       </section>
+      </div>
     </div>
 
     <Footer />
@@ -117,8 +124,15 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
+
+const loading = ref(true)
+onMounted(() => {
+  setTimeout(() => (loading.value = false), 1200)
+})
 </script>
 
 <style scoped>
@@ -182,6 +196,12 @@ import Footer from '../components/Footer.vue'
   max-width: 1200px;
   margin: 0 auto;
   padding: 130px 20px 0 20px;
+}
+
+.about-skeletons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 
 .hero-section {

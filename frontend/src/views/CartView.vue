@@ -6,7 +6,10 @@
       <h1>Mi Carrito</h1>
       
       <!-- Carrito vacío -->
-      <div v-if="cart.items.length === 0" class="empty-cart">
+      <div v-if="loading" class="cart-skeleton">
+        <SkeletonLoader v-for="n in 3" :key="n" type="list" :avatar="true" :lines="2" :image="true" />
+      </div>
+      <div v-else-if="cart.items.length === 0" class="empty-cart">
         <div class="empty-icon">🛍️</div>
         <h2>Tu carrito está vacío</h2>
         <p>Agrega productos para comenzar tu compra</p>
@@ -92,16 +95,18 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { pedidoService } from '../services/pedidoService'
 import NavBar from '../components/NavBar.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const cart = computed(() => cartStore)
 const procesando = ref(false)
+const loading = ref(true)
 
 const incrementar = (productoId) => {
   const item = cart.value.items.find(i => i.producto_id === productoId)
@@ -147,6 +152,11 @@ const procesarCompra = async () => {
     procesando.value = false
   }
 }
+
+// Simular delay al cargar carrito
+onMounted(() => {
+  setTimeout(() => (loading.value = false), 800)
+})
 </script>
 
 <style scoped>
@@ -154,6 +164,13 @@ const procesarCompra = async () => {
   min-height: 100vh;
   background: linear-gradient(to bottom, #f8faf9 0%, #ffffff 100%);
   padding-top: 100px;
+}
+
+.cart-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .cart-container {

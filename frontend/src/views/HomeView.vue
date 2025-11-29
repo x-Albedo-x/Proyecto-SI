@@ -34,7 +34,10 @@
         <router-link to="/productos" class="view-all">Ver todas</router-link>
       </div>
 
-      <div class="products-grid">
+      <div v-if="loading" class="products-grid">
+        <SkeletonLoader v-for="n in 4" :key="n" type="card" :image="true" :lines="3" :button="true" />
+      </div>
+      <div v-else class="products-grid">
         <ProductCard
           v-for="(product, index) in featuredProducts"
           :key="product.producto_id"
@@ -114,16 +117,20 @@ import { ref, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import ProductCard from '../components/ProductCard.vue'
 import ProductModal from '../components/ProductModal.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 import api from '../services/api'
 import { useCartStore } from '../stores/cartStore'
 
 const featuredProducts = ref([])
+const loading = ref(true)
 const productoSeleccionado = ref(null)
 const cartStore = useCartStore()
 const topClientes = ref([])
 
 const cargarProductosDestacados = async () => {
   try {
+    // Simular delay para ver skeleton
+    await new Promise(resolve => setTimeout(resolve, 800))
     const response = await api.get('/productos')
     // Tomar los primeros 4 productos
     const productos = (response.data.productos || []).slice(0, 4)
@@ -135,6 +142,8 @@ const cargarProductosDestacados = async () => {
     }))
   } catch (error) {
     console.error('Error al cargar productos destacados:', error)
+  } finally {
+    loading.value = false
   }
 }
 
