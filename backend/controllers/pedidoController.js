@@ -4,7 +4,15 @@ import db from '../config/database.js'
 export const crearPedido = async (req, res) => {
   try {
     const { items } = req.body
-    const clienteId = req.user.cliente_id || req.user.usuario_id
+    const { userId, tipo } = req.user
+    
+    console.log('Creando pedido - req.user:', req.user)
+    console.log('userId:', userId, 'tipo:', tipo)
+    
+    // Solo clientes pueden crear pedidos
+    if (tipo !== 'cliente') {
+      return res.status(403).json({ error: 'Solo los clientes pueden crear pedidos' })
+    }
     
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'El carrito está vacío' })
@@ -16,16 +24,24 @@ export const crearPedido = async (req, res) => {
     // Crear pedido
     const [resultPedido] = await db.query(
       'INSERT INTO pedido (cliente_id, total, estado, direccion_envio) VALUES (?, ?, ?, ?)',
-      [clienteId, total, 'entregado', 'Dirección de envío']
+      [userId, total, 'entregado', 'Dirección de envío']
     )
 
     const pedidoId = resultPedido.insertId
 
-    // Insertar detalles del pedido
+    // Insertar detalles del pedido y actualizar inventario
     for (const item of items) {
+      // Insertar detalle del pedido
       await db.query(
         'INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)',
         [pedidoId, item.producto_id, item.cantidad, item.precio, item.precio * item.cantidad]
+      )
+      
+      // Restar cantidad del inventario
+      console.log(`Restando ${item.cantidad} del producto ${item.producto_id}`)
+      await db.query(
+        'UPDATE inventario SET cantidad = cantidad - ? WHERE producto_id = ?',
+        [item.cantidad, item.producto_id]
       )
     }
 
@@ -61,7 +77,12 @@ export const obtenerPedidos = async (req, res) => {
 // Obtener pedidos del cliente logueado
 export const misPedidos = async (req, res) => {
   try {
-    const clienteId = req.user.cliente_id || req.user.usuario_id
+    const { userId, tipo } = req.user
+    
+    // Solo clientes pueden ver sus propios pedidos
+    if (tipo !== 'cliente') {
+      return res.status(403).json({ error: 'Solo los clientes pueden ver sus pedidos' })
+    }
 
     const [pedidos] = await db.query(`
       SELECT p.*, 
@@ -77,7 +98,7 @@ export const misPedidos = async (req, res) => {
       FROM pedido p
       WHERE p.cliente_id = ?
       ORDER BY p.fecha DESC
-    `, [clienteId])
+    `, [userId])
 
     res.json({ pedidos })
   } catch (error) {
