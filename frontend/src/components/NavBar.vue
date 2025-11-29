@@ -20,7 +20,7 @@
       <button v-if="!isLoggedIn" class="book-btn" @click="goToLogin">Iniciar Sesión</button>
 
       <!-- Si está logueado -->
-      <div v-else class="user-menu-container">
+      <div v-else class="user-menu-container" ref="menuContainer">
         <div class="user-profile-trigger" @click="toggleMenu">
           <div class="user-avatar-small">
             <img v-if="user?.avatar_url" :src="user.avatar_url" :alt="user.nombre" />
@@ -86,13 +86,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { authService } from '../services/authService'
 
 const router = useRouter()
 const showMenu = ref(false)
 const user = ref(null)
+const menuContainer = ref(null)
 
 const isLoggedIn = computed(() => authService.isAuthenticated())
 
@@ -136,7 +137,20 @@ onMounted(() => {
       user.value = JSON.parse(e.newValue)
     }
   })
+  
+  // Agregar listener de click fuera del menú
+  document.addEventListener('click', handleClickOutside)
 })
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+const handleClickOutside = (event) => {
+  if (menuContainer.value && !menuContainer.value.contains(event.target)) {
+    showMenu.value = false
+  }
+}
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
