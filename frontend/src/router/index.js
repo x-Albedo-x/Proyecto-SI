@@ -1,109 +1,86 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/authStore'
-import Login from '../views/Login.vue'
-import Dashboard from '../views/admin/Dashboard.vue'
-import AdminClientes from '../views/admin/Clientes.vue'
-import AdminProductos from '../views/admin/Productos.vue'
-import AdminPedidos from '../views/admin/Pedidos.vue'
-import AdminInventario from '../views/admin/Inventario.vue'
-import AdminPerfil from '../views/admin/Perfil.vue'
-import Tienda from '../views/cliente/Tienda.vue'
-import Carrito from '../views/cliente/Carrito.vue'
-import MisPedidos from '../views/cliente/MisPedidos.vue'
-import Perfil from '../views/cliente/Perfil.vue'
-
-const routes = [
-    {
-        path: '/login',
-        name: 'Login',
-        component: Login
-    },
-    {
-        path: '/dashboard',
-        name: 'Dashboard',
-        component: Dashboard,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/admin/clientes',
-        name: 'AdminClientes',
-        component: AdminClientes,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/admin/productos',
-        name: 'AdminProductos',
-        component: AdminProductos,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/admin/pedidos',
-        name: 'AdminPedidos',
-        component: AdminPedidos,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/admin/inventario',
-        name: 'AdminInventario',
-        component: AdminInventario,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/admin/perfil',
-        name: 'AdminPerfil',
-        component: AdminPerfil,
-        meta: { requiresAuth: true, role: 'administrador' }
-    },
-    {
-        path: '/tienda',
-        name: 'Tienda',
-        component: Tienda,
-        meta: { requiresAuth: true, role: 'cliente' }
-    },
-    {
-        path: '/carrito',
-        name: 'Carrito',
-        component: Carrito,
-        meta: { requiresAuth: true, role: 'cliente' }
-    },
-    {
-        path: '/mis-pedidos',
-        name: 'MisPedidos',
-        component: MisPedidos,
-        meta: { requiresAuth: true, role: 'cliente' }
-    },
-    {
-        path: '/perfil',
-        name: 'Perfil',
-        component: Perfil,
-        meta: { requiresAuth: true, role: 'cliente' }
-    },
-    {
-        path: '/:pathMatch(.*)*',
-        redirect: '/login'
-    }
-]
+import HomeView from '../views/HomeView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import LoginView from '../views/LoginView.vue'
+import DashboardView from '../views/DashboardView.vue'
+import InventoryView from '../views/InventoryView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import CartView from '../views/CartView.vue'
+import OrdersView from '../views/OrdersView.vue'
+import ComunidadView from '../views/ComunidadView.vue'
+import AboutView from '../views/AboutView.vue'
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes
-})
-
-router.beforeEach((to, from, next) => {
-    const authStore = useAuthStore()
-    authStore.loadUserFromStorage()
-
-    if (to.meta.requiresAuth) {
-        if (!authStore.isAuthenticated) {
-            next('/login')
-        } else if (to.meta.role && authStore.userRole !== to.meta.role) {
-            next('/login')
-        } else {
-            next()
-        }
-    } else {
-        next()
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: HomeView,
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/dashboard/inventario',
+      name: 'inventario',
+      component: InventoryView,
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/admin/inventario',
+      name: 'admin-inventario',
+      component: InventoryView,
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/productos',
+      name: 'productos',
+      component: () => import('../views/ProductosView.vue')
+    },
+    {
+      path: '/perfil',
+      name: 'perfil',
+      component: ProfileView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: CartView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/orders',
+      name: 'orders',
+      component: OrdersView,
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView
+    },
+    {
+      path: '/comunidad',
+      name: 'comunidad',
+      component: ComunidadView,
+      meta: { requiresAuth: true }
     }
+  ],
 })
 
 export default router
